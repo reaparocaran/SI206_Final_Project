@@ -38,6 +38,14 @@ class main():
 			if item['name'] not in songs:
 				songs[item['name']] = item['popularity']
 		print(songs)
+	def fillTable(self):
+		self.cur.execute('''CREATE TABLE IF NOT EXISTS Songs
+			(Title TEXT, Popularity INTEGER) ''')
+		for item in songs.items():
+			self.cur.execute('''INSERT INTO Songs (Title, Popularity) VALUES (?, ?)''', (item[0], item[1]))
+		self.conn.commit()
+		print('successful')
+
 
 
 
@@ -45,3 +53,5 @@ if __name__ == "__main__":
 	m = main()
 	m.setUp()
 	m.getTracks()
+	songs = {'PILLOWTALK': 67, "iT's YoU": 44, '': 0, 'Hymn for the Weekend': 78, 'Remember Me (Dúo)': 65, 'Work': 69, 'History': 74, 'IV. Sweatpants': 49, 'YOUTH': 68, 'Carolina': 65, 'Party': 67, 'Lights Down Low': 48, 'DNA.': 81, 'Not Too Young': 5, 'Often': 11, 'Exchange': 80, 'wRoNg': 64, "Like I'm Gonna Lose You": 79, 'Kar Gayi Chull (From "Kapoor & Sons (Since 1921)")': 46, 'Sweet Life': 60}
+	m.fillTable()
