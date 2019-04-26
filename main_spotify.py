@@ -38,43 +38,6 @@ class main():
 			if item['name'] not in songs:
 				songs[item['name']] = item['popularity']
 		print(songs)
-		# date = datetime.datetime.now()
-		# today_date = (str(date).split())[0]
-		# past_week_dates = helper.getLast7Days(today_date)
-		# time_accessed = (str(date.time()).split('.'))[0]
-		# self.weekdays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
-		# day_iter = date.weekday()
-		# self.curr_date_tracks = []
-
-		# for item in tracks['items']:
-		# 	played_date = helper.translateUTCtoEST(item['played_at'])
-		# 	if past_week_dates[curr_date_iter] == played_date: #Correct
-		# 		title = item['track']['name']
-		# 		if item.get('context', "None:None") and item.get('context', "None:None").get('uri', "None:None"):
-		# 			playlist = helper.getPlaylist(self.spotify, item['context']['uri'])
-		# 		else:
-		# 			playlist = "No Playlist"
-		# 		track_info = {}
-		# 		track_info[title]= {"artist" : item['track']['artists'][0]['name'], 
-		# 		"album" : item['track']['album']['name'], "popularity" : item['track']['popularity'], 
-		# 		"playlist" : playlist, "played" : self.weekdays[day_iter], "daily_repeats" : 0, "time_accessed": time_accessed}
-				
-		# 		if any(title in elt for elt in self.curr_date_tracks):
-		# 			i = next((i for i, d in enumerate(self.curr_date_tracks) if title in d), None)
-		# 			self.curr_date_tracks[i][title]['daily_repeats'] += 1
-		# 		else:
-		# 			self.curr_date_tracks.append(track_info)
-		# 	else:
-		# 		if curr_date_iter == 6:
-		# 			curr_date_iter = 7
-		# 			break
-		# 		else:
-		# 			curr_date_iter += 1
-
-		# 		if day_iter == 0:
-		# 			day_iter = 6
-		# 		else:
-		# 			day_iter -= 1
 
 
 
