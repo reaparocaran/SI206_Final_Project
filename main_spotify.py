@@ -6,6 +6,10 @@ import sqlite3
 import spotipy
 import spotipy.util as util
 import matplotlib.pyplot as plt
+import matplotlib
+import re
+import plotly
+
 
 class main():
 
@@ -24,6 +28,7 @@ class main():
 				
 		self.conn = sqlite3.connect('database.sqlite')
 		self.cur = self.conn.cursor()
+		self.apikeymusix='e760df8ff23a565c9d73a6118db8a6e0'
 
 	'''
 	The function below makes a request to the Spotify API to retrieve the playlist information of the
@@ -77,7 +82,7 @@ class main():
 	This function creates a data visual with a range of different popularities and how many songs 
 	are within that range. This is a bar graph. 
 	'''
-	def createVisual(self):
+	def createSpotifyVisual(self):
 		popularity = self.cur.execute('''SELECT Popularity FROM Songs''')
 		list_pop = list(popularity)
 		final_pop = []
@@ -94,6 +99,7 @@ class main():
 		 		dictionary['50-74'] += 1
 		 	else:
 		 		dictionary['75-100'] += 1
+		
 		labels = dictionary.items()
 		
 		x_nums = [1,2,3,4]
@@ -108,7 +114,98 @@ class main():
 		plt.xlabel("Popularity Ranges")
 		plt.ylabel("Number of Songs")
 		plt.title("Number of Songs with Spotify Popularity")
+		plt.savefig("spotify_bargraph.png")
+
 		plt.show()
+	
+	# ##BEGINNING OF LINDSAY'S CODE
+	
+
+	def call4_id(self, songname):
+	    search=requests.get('http://api.musixmatch.com/ws/1.1/track.search?apikey=e760df8ff23a565c9d73a6118db8a6e0&q_track='+songname)
+	    search1=search.json()
+	    trackobj=search1['message']['body']['track_list'] 
+	    try:
+	    	song_id=trackobj[0]['track']['commontrack_id']
+	    	return song_id
+	    except:
+	    	pass
+
+
+	def call4_lyric(self, song_id):
+	    id=str(song_id)
+	    search=requests.get('http://api.musixmatch.com/ws/1.1/track.lyrics.get?apikey=e760df8ff23a565c9d73a6118db8a6e0&track_id='+id)
+	    songinfo=search.json()
+	    try:
+	        lyrics=songinfo['message']['body']['lyrics']['lyrics_body']
+	        return lyrics
+	    except:
+	        pass
+
+	def create_wordcount_dict(self):
+	    list=self.cur.execute('SELECT Title from Songs')
+	    songlist=[]
+	    for x in list:
+	    	songlist.append(x[0])
+	    word_dict={}
+	    for x in songlist:
+	        song_id=self.call4_id(x)
+        	lyricsraw=self.call4_lyric(song_id)
+	        if lyricsraw!=None:
+	            words=[]
+	            lyrics_only=lyricsraw.replace('******* This Lyrics is NOT for Commercial use *******','')
+	            lyrics_only=lyrics_only.replace('(1409618364852)','')
+	            lyrics_only=lyrics_only.replace('...','')
+	            lines=lyrics_only.split('\n')
+	            wordlist1=[]
+	            for x in lines:
+	                wordlist1+=x.split(' ')
+	            for x in wordlist1:
+	                justword=x.strip('?')
+	                justword=justword.strip('"')
+	                justword=justword.lower()
+	                words.append(justword)
+	            for x in words:
+	                if x not in word_dict:
+	                    word_dict[x]=1
+	                else:
+	                    word_dict[x]+=1
+	        else:
+	            pass
+	    print("Created word dictionary!")
+	    self.data = sorted(word_dict.items(), key=lambda x: x[1],reverse=True)
+	    self.cur.execute('CREATE TABLE IF NOT EXISTS Words (Word TEXT, Wordcount INTEGER)')
+
+	    for x in self.data:
+	        word=x[0]
+	        wordcount=x[1]
+	        self.cur.execute('INSERT INTO Words (Word, Wordcount) VALUES (?,?)', (word, wordcount))
+	    self.conn.commit() ##needs rea connection
+	    print("Added new word table in database!")
+	    return self.data
+
+	def create_visual1(self):
+	    labels=[]
+	    x_nums=[1,2,3,4,5,6,7,8,9,10]
+	    topten=self.data[1:11]
+	    for x in topten:
+	        labels.append(x[0])
+
+	    counts=[]
+	    for x in topten:
+	        counts.append(x[1])
+
+	    plt.bar(x_nums, counts, align='center', color=["red", "yellow","green","blue","purple","red","yellow","green","blue","purple"])
+	    plt.xticks(x_nums, labels)
+	    plt.xlabel("Top 10 Most Common Words")
+	    plt.ylabel("Number of Occurences")
+	    plt.title("Top 10 Most Common Words in Rea's Top Spotify Songs")
+	    plt.savefig("words_bargraph.png")
+	    plt.show()
+	    return labels 
+
+	# ###BEGINNING OF PRIYAS CODE
+	
 
 
 
@@ -117,9 +214,12 @@ if __name__ == "__main__":
 	m.setUp()
 	m.getPlaylists()
 	m.getSongs()
-	m.createVisual()
+	m.createSpotifyVisual()
+	m.create_wordcount_dict()
+	m.create_visual1()
+	
 
-# PAST CODE - IGNORE
+# REA'S PAST CODE - IGNORE
 		#write to file
 		# file = open('songs.json', 'w')
 		# f = json.dumps(self.results2)
